@@ -4,7 +4,7 @@ services:
     env: node
     plan: free # Free tier!
     buildCommand: npm run build
-    startCommand: npx prisma migrate deploy && npm run start
+    startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
