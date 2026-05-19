@@ -63,7 +63,7 @@ export async function GET() {
   const aiStats = {
     total: totalAiUsage,
     byType: aiUsageByType.reduce(
-      (acc, item) => {
+      (acc: Record<string, number>, item: any) => {
         acc[item.type] = item._count.type;
         return acc;
       },
