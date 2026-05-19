@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: notiq
+    env: node
+    plan: free # Free tier!
+    buildCommand: npm run build
+    startCommand: npx prisma migrate deploy && npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # You will paste your hosted PostgreSQL connection string in the Render Dashboard
+      - key: NEXTAUTH_SECRET
+        generateValue: true # Render will auto-generate a secure random secret key
+      - key: NEXTAUTH_URL
+        value: https://notiq.onrender.com # Replace this with your actual Render URL once deployed
+      - key: GEMINI_API_KEY
+        sync: false # You will paste your Gemini API Key in the Render Dashboard
