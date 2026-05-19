@@ -46,7 +46,7 @@ export async function GET() {
     take: 10,
   });
 
-  const mostUsedTags = tags.map((tag) => ({
+  const mostUsedTags = tags.map((tag: any) => ({
     name: tag.name,
     count: tag._count.notes,
   }));
