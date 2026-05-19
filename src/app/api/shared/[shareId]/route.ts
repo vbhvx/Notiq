@@ -32,7 +32,7 @@ export async function GET(
     content: note.content,
     summary: note.summary,
     actionItems: note.actionItems ? JSON.parse(note.actionItems) : [],
-    tags: note.tags.map((nt) => nt.tag),
+    tags: note.tags.map((nt: any) => nt.tag),
     author: note.user.name,
     createdAt: note.createdAt,
     updatedAt: note.updatedAt,

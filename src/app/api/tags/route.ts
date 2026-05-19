@@ -19,7 +19,7 @@ export async function GET() {
   });
 
   return NextResponse.json(
-    tags.map((tag) => ({
+    tags.map((tag: any) => ({
       id: tag.id,
       name: tag.name,
       count: tag._count.notes,

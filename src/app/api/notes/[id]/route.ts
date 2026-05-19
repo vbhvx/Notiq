@@ -28,7 +28,7 @@ export async function GET(
 
   return NextResponse.json({
     ...note,
-    tags: note.tags.map((nt) => nt.tag),
+    tags: note.tags.map((nt: any) => nt.tag),
     actionItems: note.actionItems ? JSON.parse(note.actionItems) : [],
   });
 }
@@ -108,7 +108,7 @@ export async function PATCH(
 
     return NextResponse.json({
       ...fullNote,
-      tags: fullNote?.tags.map((nt) => nt.tag) || [],
+      tags: fullNote?.tags.map((nt: any) => nt.tag) || [],
       actionItems: fullNote?.actionItems ? JSON.parse(fullNote.actionItems) : [],
     });
   } catch (error) {
