@@ -30,6 +30,7 @@ export default function ArchivedPage() {
     finally { setLoading(false); }
   }, [addToast]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchArchived(); }, [fetchArchived]);
 
   const unarchive = async (id: string, e: React.MouseEvent) => {

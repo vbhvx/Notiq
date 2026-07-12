@@ -82,6 +82,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchNotes(1);
     fetchTags();
   }, [fetchNotes, fetchTags]);

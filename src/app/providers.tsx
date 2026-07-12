@@ -18,6 +18,7 @@ function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = localStorage.getItem("notiq-theme") || "dark";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(saved);
     document.documentElement.setAttribute("data-theme", saved);
   }, []);

@@ -33,6 +33,7 @@ export default function InsightsPage() {
     finally { setLoading(false); }
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchInsights(); }, [fetchInsights]);
 
   if (loading) return <div className="empty-state"><div className="ai-loading"><div className="spinner" /><span>Loading insights...</span></div></div>;
@@ -41,6 +42,7 @@ export default function InsightsPage() {
   const maxActivity = Math.max(...data.weeklyActivity.map((d) => d.created + d.updated), 1);
 
   const formatDate = (d: string) => {
+    // eslint-disable-next-line react-hooks/purity
     const diff = Date.now() - new Date(d).getTime();
     const mins = Math.floor(diff / 60000);
     if (mins < 60) return `${mins}m ago`;

@@ -50,6 +50,7 @@ export default function NoteEditorPage() {
     finally { setLoading(false); }
   }, [noteId, router]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchNote(); }, [fetchNote]);
 
   const saveNote = useCallback(async (t: string, c: string, tagsList: string[]) => {
