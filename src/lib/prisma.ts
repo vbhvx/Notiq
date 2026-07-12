@@ -8,9 +8,9 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) {
-    throw new Error("DATABASE_URL is not defined in your environment variables.");
+  const connectionString = process.env.DATABASE_URL || "postgresql://dummy:dummy@localhost:5432/dummy";
+  if (!process.env.DATABASE_URL) {
+    console.warn("⚠️ DATABASE_URL is not defined! Using dummy connection string for build phase.");
   }
   const pool = globalForPrisma.pool ?? new Pool({ connectionString });
   if (process.env.NODE_ENV !== "production") {
