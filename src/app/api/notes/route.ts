@@ -78,9 +78,9 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const formattedNotes = notes.map((note: any) => ({
+  const formattedNotes = notes.map((note) => ({
     ...note,
-    tags: note.tags.map((nt: any) => nt.tag),
+    tags: note.tags.map((nt) => nt.tag),
     actionItems: note.actionItems ? JSON.parse(note.actionItems) : [],
   }));
 
@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ...fullNote,
-        tags: fullNote?.tags.map((nt: any) => nt.tag) || [],
+        tags: fullNote?.tags.map((nt) => nt.tag) || [],
         actionItems: fullNote?.actionItems
           ? JSON.parse(fullNote.actionItems)
           : [],

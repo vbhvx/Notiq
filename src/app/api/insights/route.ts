@@ -63,7 +63,7 @@ export async function GET() {
         }),
       ]);
 
-    const mostUsedTags = tags.map((tag: any) => ({
+    const mostUsedTags = tags.map((tag) => ({
       name: tag.name,
       count: tag._count.notes,
     }));
@@ -71,7 +71,7 @@ export async function GET() {
     const aiStats = {
       total: totalAiUsage,
       byType: aiUsageByType.reduce(
-        (acc: Record<string, number>, item: any) => {
+        (acc: Record<string, number>, item: { type: string; _count: { type: number } }) => {
           acc[item.type] = item._count.type;
           return acc;
         },
