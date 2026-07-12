@@ -3,7 +3,7 @@ services:
     name: notiq
     env: node
     plan: starter
-    buildCommand: npm run build
+    buildCommand: npx prisma migrate deploy && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
