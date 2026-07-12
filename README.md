@@ -5,7 +5,7 @@
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
 ![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma)
-![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql)
 
 ---
 
@@ -59,6 +59,11 @@
 - ✅ **Auto-save** — debounced at 1.5 seconds
 - ✅ **Optimistic UI** — instant visual feedback
 
+### 🛡️ Production Readiness
+- **Security**: Strict security headers, XSS sanitization (DOMPurify), and robust input validation.
+- **Performance**: N+1 query optimizations, database connection pooling, and strict React hooks linting.
+- **CI/CD Pipeline**: GitHub Actions for automated linting, type-checking, and Render.com deployment.
+
 ---
 
 ## 🏗️ Architecture
@@ -67,8 +72,7 @@
 notiq/
 ├── prisma/
 │   ├── schema.prisma          # Database schema (User, Note, Tag, AiUsageLog)
-│   ├── migrations/            # Migration history
-│   └── dev.db                 # SQLite database (local)
+│   └── migrations/            # Migration history
 ├── src/
 │   ├── app/
 │   │   ├── api/
@@ -113,7 +117,7 @@ notiq/
 |-------|-----------|
 | **Framework** | Next.js 16 (App Router + Turbopack) |
 | **Language** | TypeScript |
-| **Database** | SQLite via Prisma 7 |
+| **Database** | PostgreSQL via Prisma 7 |
 | **Auth** | NextAuth.js v5 (Auth.js) with JWT |
 | **AI** | Google Gemini 2.0 Flash |
 | **Styling** | Vanilla CSS (custom design system) |
@@ -165,7 +169,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### Environment Variables
 
 ```env
-DATABASE_URL="file:./dev.db"
+DATABASE_URL="postgresql://user:password@localhost:5432/notiq"
 NEXTAUTH_SECRET="generate-a-secret-with-openssl-rand-base64-32"
 NEXTAUTH_URL="http://localhost:3000"
 GEMINI_API_KEY="your-gemini-api-key-from-aistudio-google-dev"
