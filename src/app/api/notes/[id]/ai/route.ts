@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { generateSummary, extractActionItems, suggestTitle } from "@/lib/ai";
 import { aiTypeSchema, parseBody } from "@/lib/validate";
 import { rateLimit } from "@/lib/rate-limit";
-import { logger } from "@/lib/logger";
 
 // Rate limit: 20 AI generations per hour per user
 const AI_LIMIT = 20;
@@ -25,7 +24,7 @@ export async function POST(
   // Rate limiting per user
   const rl = rateLimit(`ai:${session.user.id}`, AI_LIMIT, AI_WINDOW_MS);
   if (!rl.success) {
-    logger.warn("AI rate limit exceeded", {
+    console.warn("AI rate limit exceeded", {
       userId: session.user.id,
       method: "POST",
       path: "/api/notes/ai",
@@ -124,7 +123,7 @@ export async function POST(
       }
     }
 
-    logger.info("AI generation completed", {
+    console.log("AI generation completed", {
       userId: session.user.id,
       method: "POST",
       path: `/api/notes/${id}/ai`,
@@ -132,7 +131,7 @@ export async function POST(
 
     return NextResponse.json(result);
   } catch (error) {
-    logger.error("AI generation error", error, {
+    console.error("AI generation error", error, {
       userId: session.user.id,
       method: "POST",
       path: `/api/notes/${id}/ai`,

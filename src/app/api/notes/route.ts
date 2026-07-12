@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { paginationSchema, createNoteSchema, parseBody } from "@/lib/validate";
-import { logger } from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -157,7 +156,7 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    logger.info("Note created", {
+    console.log("Note created", {
       userId: session.user.id,
       method: "POST",
       path: "/api/notes",
@@ -174,7 +173,7 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    logger.error("Create note error", error, {
+    console.error("Create note error", error, {
       userId: session.user.id,
       method: "POST",
       path: "/api/notes",

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { updateNoteSchema, parseBody } from "@/lib/validate";
-import { logger } from "@/lib/logger";
 
 export async function GET(
   req: NextRequest,
@@ -124,7 +123,7 @@ export async function PATCH(
         : [],
     });
   } catch (error) {
-    logger.error("Update note error", error, {
+    console.error("Update note error", error, {
       userId: session.user.id,
       method: "PATCH",
       path: `/api/notes/${id}`,
@@ -157,7 +156,7 @@ export async function DELETE(
 
   await prisma.note.delete({ where: { id } });
 
-  logger.info("Note deleted", {
+  console.log("Note deleted", {
     userId: session.user.id,
     method: "DELETE",
     path: `/api/notes/${id}`,

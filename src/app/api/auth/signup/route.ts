@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { signupSchema, parseBody } from "@/lib/validate";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
-import { logger } from "@/lib/logger";
 
 // Rate limit: 5 signups per hour per IP
 const SIGNUP_LIMIT = 5;
@@ -15,7 +14,7 @@ export async function POST(req: NextRequest) {
     const clientIp = getClientIp(req);
     const rl = rateLimit(`signup:${clientIp}`, SIGNUP_LIMIT, SIGNUP_WINDOW_MS);
     if (!rl.success) {
-      logger.warn("Signup rate limit exceeded", { method: "POST", path: "/api/auth/signup" });
+      console.warn("Signup rate limit exceeded", { method: "POST", path: "/api/auth/signup" });
       return NextResponse.json(
         { error: "Too many signup attempts. Please try again later." },
         {
@@ -66,14 +65,14 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    logger.info("User created", { userId: user.id, method: "POST", path: "/api/auth/signup" });
+    console.log("User created", { userId: user.id, method: "POST", path: "/api/auth/signup" });
 
     return NextResponse.json(
       { message: "Account created successfully", user },
       { status: 201 }
     );
   } catch (error) {
-    logger.error("Signup error", error, { method: "POST", path: "/api/auth/signup" });
+    console.error("Signup error", error, { method: "POST", path: "/api/auth/signup" });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

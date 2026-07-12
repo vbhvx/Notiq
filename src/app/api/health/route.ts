@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 
 /**
  * Health check endpoint.
@@ -18,7 +17,7 @@ export async function GET() {
     await prisma.$queryRaw`SELECT 1`;
     dbStatus = "connected";
   } catch (error) {
-    logger.error("Health check: database unreachable", error);
+    console.error("Health check: database unreachable", error);
   }
 
   const durationMs = Date.now() - startTime;
@@ -33,7 +32,7 @@ export async function GET() {
     version: process.env.npm_package_version || "1.0.0",
   };
 
-  logger.info("Health check", { statusCode: status === "ok" ? 200 : 503, durationMs });
+  console.log("Health check", { statusCode: status === "ok" ? 200 : 503, durationMs });
 
   return NextResponse.json(response, {
     status: status === "ok" ? 200 : 503,
