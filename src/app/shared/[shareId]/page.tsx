@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { marked } from "marked";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { LockClosedIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
 
 interface SharedNote {
   id: string; title: string; content: string;
@@ -40,22 +43,25 @@ export default function SharedNotePage() {
   if (error || !note) return (
     <div className="shared-page">
       <div className="shared-card" style={{ textAlign: "center" }}>
-        <div style={{ fontSize: "3rem", marginBottom: 16 }}>🔒</div>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <LockClosedIcon className="w-12 h-12" style={{ color: "var(--text-tertiary)" }} />
+        </div>
         <h1 style={{ fontSize: "1.5rem" }}>Note Not Found</h1>
         <p style={{ color: "var(--text-secondary)", marginTop: 8 }}>This note doesn&apos;t exist or is no longer public.</p>
       </div>
     </div>
   );
 
-  const rendered = (() => { try { return marked(note.content || ""); } catch { return note.content; } })();
+  const rendered = (() => { try { return sanitizeHtml(marked(note.content || "") as string); } catch { return note.content; } })();
   const formatDate = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   return (
     <div className="shared-page">
       <div className="shared-card animate-in">
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-          <span style={{ fontSize: "0.75rem", padding: "3px 10px", borderRadius: 50, background: "var(--accent-soft)", color: "var(--accent)", fontWeight: 600 }}>
-            ✦ Shared via Notiq
+          <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.75rem", padding: "3px 10px", borderRadius: 50, background: "var(--accent-soft)", color: "var(--accent)", fontWeight: 600 }}>
+            <Image src="/logo.png" alt="Logo" width={14} height={14} style={{ borderRadius: 3 }} />
+            Shared via Notiq
           </span>
         </div>
 
@@ -98,7 +104,7 @@ export default function SharedNotePage() {
         )}
 
         <div style={{ marginTop: 32, paddingTop: 20, borderTop: "1px solid var(--border)", textAlign: "center", fontSize: "0.8rem", color: "var(--text-tertiary)" }}>
-          Shared with <span style={{ fontWeight: 700, background: "linear-gradient(135deg, var(--accent), #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>✦ Notiq</span> — AI-Powered Notes Workspace
+          Shared with <span style={{ fontWeight: 700, background: "linear-gradient(135deg, var(--accent), #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Notiq</span> — AI-Powered Notes Workspace
         </div>
       </div>
     </div>

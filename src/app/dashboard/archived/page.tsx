@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useToast } from "../../providers";
+import { ArchiveBoxIcon } from "@heroicons/react/24/outline";
 
 interface Note {
   id: string;
@@ -21,7 +22,10 @@ export default function ArchivedPage() {
   const fetchArchived = useCallback(async () => {
     try {
       const res = await fetch("/api/notes?archived=true");
-      if (res.ok) setNotes(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setNotes(data.notes);
+      }
     } catch { addToast("Failed to load archived notes", "error"); }
     finally { setLoading(false); }
   }, [addToast]);
@@ -46,13 +50,13 @@ export default function ArchivedPage() {
   return (
     <>
       <div className="notes-header">
-        <h2>📦 Archived Notes</h2>
+        <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}><ArchiveBoxIcon className="w-6 h-6" /> Archived Notes</h2>
       </div>
       {loading ? (
         <div className="empty-state"><div className="ai-loading"><div className="spinner" /><span>Loading...</span></div></div>
       ) : notes.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">📦</div>
+          <div className="empty-state-icon"><ArchiveBoxIcon className="w-12 h-12" style={{ margin: "0 auto" }} /></div>
           <h3>No archived notes</h3>
           <p>Archived notes will appear here</p>
         </div>

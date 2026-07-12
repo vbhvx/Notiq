@@ -2,17 +2,17 @@ services:
   - type: web
     name: notiq
     env: node
-    plan: free # Free tier!
+    plan: starter
     buildCommand: npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false # You will paste your hosted PostgreSQL connection string in the Render Dashboard
+        sync: false # Must be a hosted DB like Neon or Render Managed Postgres, not localhost!
       - key: NEXTAUTH_SECRET
-        generateValue: true # Render will auto-generate a secure random secret key
+        generateValue: true
       - key: NEXTAUTH_URL
-        value: https://notiq.onrender.com # Replace this with your actual Render URL once deployed
+        value: https://notiq.onrender.com
       - key: GEMINI_API_KEY
-        sync: false # You will paste your Gemini API Key in the Render Dashboard
+        sync: false # Never commit API keys to this file!

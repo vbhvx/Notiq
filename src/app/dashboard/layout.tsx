@@ -1,9 +1,20 @@
 "use client";
 
+import Image from "next/image";
+
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "../providers";
 import { ReactNode } from "react";
+import { 
+  DocumentTextIcon, 
+  ArchiveBoxIcon, 
+  ChartBarIcon, 
+  CommandLineIcon, 
+  MoonIcon, 
+  SunIcon, 
+  ArrowRightOnRectangleIcon
+} from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
@@ -12,16 +23,19 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { theme, toggleTheme } = useTheme();
 
   const links = [
-    { href: "/dashboard", label: "Notes", icon: "📝" },
-    { href: "/dashboard/archived", label: "Archive", icon: "📦" },
-    { href: "/dashboard/insights", label: "Insights", icon: "📊" },
+    { href: "/dashboard", label: "Notes", icon: <DocumentTextIcon className="w-5 h-5" /> },
+    { href: "/dashboard/archived", label: "Archive", icon: <ArchiveBoxIcon className="w-5 h-5" /> },
+    { href: "/dashboard/insights", label: "Insights", icon: <ChartBarIcon className="w-5 h-5" /> },
   ];
 
   return (
     <div className="page-container">
       <aside className="sidebar">
         <div className="sidebar-logo">
-          <h1>✦ Notiq</h1>
+          <h1 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Image src="/logo.png" alt="Notiq Logo" width={28} height={28} style={{ borderRadius: 6 }} />
+            Notiq
+          </h1>
           <p style={{ fontSize: "0.75rem", color: "var(--text-tertiary)", marginTop: 4 }}>
             AI-Powered Notes
           </p>
@@ -42,7 +56,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div style={{ flex: 1 }} />
 
           <button className="sidebar-link" onClick={() => router.push("/dashboard")}>
-            <span>⌨</span>
+            <span style={{ display: "flex" }}><CommandLineIcon className="w-5 h-5" /></span>
             Shortcuts
             <kbd className="kbd" style={{ marginLeft: "auto" }}>?</kbd>
           </button>
@@ -51,7 +65,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         <div className="sidebar-footer">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
             <button onClick={toggleTheme} className="theme-toggle" title="Toggle theme">
-              {theme === "dark" ? "☀️" : "🌙"}
+              {theme === "dark" ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
             </button>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -74,7 +88,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </div>
             </div>
             <button className="btn btn-ghost btn-sm" onClick={() => signOut({ callbackUrl: "/auth/login" })} title="Sign out">
-              ↪
+              <ArrowRightOnRectangleIcon className="w-5 h-5" />
             </button>
           </div>
         </div>

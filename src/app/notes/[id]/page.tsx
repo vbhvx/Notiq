@@ -4,6 +4,11 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useToast } from "../../providers";
 import { marked } from "marked";
+import { sanitizeHtml } from "@/lib/sanitize";
+import { 
+  ArrowLeftIcon, BookOpenIcon, CpuChipIcon, LinkIcon, ArchiveBoxIcon, TrashIcon, 
+  XMarkIcon, SparklesIcon, CheckBadgeIcon, LightBulbIcon, RocketLaunchIcon, DocumentTextIcon, CheckIcon 
+} from "@heroicons/react/24/outline";
 
 interface Tag { id: string; name: string; }
 interface Note {
@@ -172,7 +177,7 @@ export default function NoteEditorPage() {
   if (loading) return <div className="empty-state" style={{ height: "100vh" }}><div className="ai-loading"><div className="spinner" /><span>Loading note...</span></div></div>;
 
   const renderedMarkdown = (() => {
-    try { return marked(content || "*Start writing...*"); }
+    try { return sanitizeHtml(marked(content || "*Start writing...*") as string); }
     catch { return content; }
   })();
 
@@ -180,21 +185,23 @@ export default function NoteEditorPage() {
     <div className="editor-container">
       <div className="editor-main">
         <div className="editor-toolbar">
-          <button className="btn btn-ghost btn-sm" onClick={() => router.push("/dashboard")}>← Back</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => router.push("/dashboard")} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <ArrowLeftIcon className="w-4 h-4" /> Back
+          </button>
           <div className="save-indicator">
             <div className={`save-dot ${saving}`} />
             {saving === "saved" ? "Saved" : saving === "saving" ? "Saving..." : "Unsaved"}
           </div>
           <div style={{ flex: 1 }} />
-          <button className={`btn btn-ghost btn-sm ${showPreview ? "" : ""}`} onClick={() => setShowPreview(!showPreview)} title="Toggle preview (Ctrl+P)">
-            {showPreview ? "📖 Hide Preview" : "📖 Preview"}
+          <button className={`btn btn-ghost btn-sm ${showPreview ? "" : ""}`} onClick={() => setShowPreview(!showPreview)} title="Toggle preview (Ctrl+P)" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <BookOpenIcon className="w-4 h-4" /> {showPreview ? "Hide Preview" : "Preview"}
           </button>
-          <button className="btn btn-ghost btn-sm" onClick={() => setShowAi(!showAi)}>
-            {showAi ? "🤖 Hide AI" : "🤖 AI Panel"}
+          <button className="btn btn-ghost btn-sm" onClick={() => setShowAi(!showAi)} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <CpuChipIcon className="w-4 h-4" /> {showAi ? "Hide AI" : "AI Panel"}
           </button>
-          <button className="btn btn-ghost btn-sm" onClick={() => setShowShare(true)} title="Share">🔗 Share</button>
-          <button className="btn btn-ghost btn-sm" onClick={archiveNote} title="Archive">📦</button>
-          <button className="btn btn-ghost btn-sm" onClick={deleteNote} title="Delete" style={{ color: "var(--danger)" }}>🗑️</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => setShowShare(true)} title="Share"><LinkIcon className="w-4 h-4" /> Share</button>
+          <button className="btn btn-ghost btn-sm" onClick={archiveNote} title="Archive"><ArchiveBoxIcon className="w-4 h-4" /></button>
+          <button className="btn btn-ghost btn-sm" onClick={deleteNote} title="Delete" style={{ color: "var(--danger)" }}><TrashIcon className="w-4 h-4" /></button>
         </div>
 
         <input
@@ -207,8 +214,8 @@ export default function NoteEditorPage() {
         <div style={{ padding: "8px 24px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
           <span style={{ fontSize: "0.8rem", color: "var(--text-tertiary)" }}>Tags:</span>
           {tags.map((tag) => (
-            <span key={tag} className="tag tag-removable" onClick={() => removeTag(tag)}>
-              {tag} ✕
+            <span key={tag} className="tag tag-removable" onClick={() => removeTag(tag)} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              {tag} <XMarkIcon className="w-3 h-3" />
             </span>
           ))}
           <input
@@ -239,38 +246,38 @@ export default function NoteEditorPage() {
       {showAi && (
         <div className="ai-panel">
           <div className="ai-panel-header">
-            <h3>🤖 AI Assistant</h3>
-            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowAi(false)}>✕</button>
+            <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}><CpuChipIcon className="w-5 h-5" /> AI Assistant</h3>
+            <button className="btn btn-ghost btn-icon btn-sm" onClick={() => setShowAi(false)}><XMarkIcon className="w-5 h-5" /></button>
           </div>
 
           <div className="ai-section">
             <h4>Quick Actions</h4>
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <button className="btn btn-secondary btn-sm" onClick={() => handleAi("summary")} disabled={!!aiLoading || !content.trim()}>
-                {aiLoading === "summary" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Generating...</> : "✨ Generate Summary"}
+              <button className="btn btn-secondary btn-sm" onClick={() => handleAi("summary")} disabled={!!aiLoading || !content.trim()} style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
+                {aiLoading === "summary" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Generating...</> : <><SparklesIcon className="w-4 h-4" /> Generate Summary</>}
               </button>
-              <button className="btn btn-secondary btn-sm" onClick={() => handleAi("action_items")} disabled={!!aiLoading || !content.trim()}>
-                {aiLoading === "action_items" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Extracting...</> : "☑️ Extract Action Items"}
+              <button className="btn btn-secondary btn-sm" onClick={() => handleAi("action_items")} disabled={!!aiLoading || !content.trim()} style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
+                {aiLoading === "action_items" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Extracting...</> : <><CheckBadgeIcon className="w-4 h-4" /> Extract Action Items</>}
               </button>
-              <button className="btn btn-secondary btn-sm" onClick={() => handleAi("title")} disabled={!!aiLoading || !content.trim()}>
-                {aiLoading === "title" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Suggesting...</> : "💡 Suggest Title"}
+              <button className="btn btn-secondary btn-sm" onClick={() => handleAi("title")} disabled={!!aiLoading || !content.trim()} style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
+                {aiLoading === "title" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Suggesting...</> : <><LightBulbIcon className="w-4 h-4" /> Suggest Title</>}
               </button>
-              <button className="btn btn-primary btn-sm" onClick={() => handleAi("all")} disabled={!!aiLoading || !content.trim()} style={{ marginTop: 4 }}>
-                {aiLoading === "all" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Processing...</> : "🚀 Generate All"}
+              <button className="btn btn-primary btn-sm" onClick={() => handleAi("all")} disabled={!!aiLoading || !content.trim()} style={{ marginTop: 4, display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
+                {aiLoading === "all" ? <><div className="spinner" style={{ width: 14, height: 14 }} /> Processing...</> : <><RocketLaunchIcon className="w-4 h-4" /> Generate All</>}
               </button>
             </div>
           </div>
 
           {note?.summary && (
             <div className="ai-section">
-              <h4>📝 Summary</h4>
+              <h4 style={{ display: "flex", alignItems: "center", gap: 6 }}><DocumentTextIcon className="w-4 h-4" /> Summary</h4>
               <div className="ai-summary">{note.summary}</div>
             </div>
           )}
 
           {note?.actionItems && note.actionItems.length > 0 && (
             <div className="ai-section">
-              <h4>☑️ Action Items</h4>
+              <h4 style={{ display: "flex", alignItems: "center", gap: 6 }}><CheckBadgeIcon className="w-4 h-4" /> Action Items</h4>
               {note.actionItems.map((item, i) => (
                 <div key={i} className="ai-action-item">{item}</div>
               ))}
@@ -290,15 +297,16 @@ export default function NoteEditorPage() {
       {showShare && note && (
         <div className="modal-overlay" onClick={() => setShowShare(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>🔗 Share Note</h3>
+            <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}><LinkIcon className="w-5 h-5" /> Share Note</h3>
             <div style={{ marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <span style={{ fontSize: "0.9rem" }}>Public visibility</span>
                 <button
                   className={`btn btn-sm ${note.isPublic ? "btn-primary" : "btn-secondary"}`}
                   onClick={togglePublic}
+                  style={{ display: "flex", alignItems: "center", gap: 6 }}
                 >
-                  {note.isPublic ? "Public ✓" : "Private"}
+                  {note.isPublic ? <><CheckIcon className="w-4 h-4" /> Public</> : "Private"}
                 </button>
               </div>
               {note.isPublic && (

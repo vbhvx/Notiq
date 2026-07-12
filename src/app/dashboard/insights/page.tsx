@@ -1,6 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { 
+  ChartBarIcon, 
+  DocumentTextIcon, 
+  ArchiveBoxIcon, 
+  GlobeAltIcon, 
+  SparklesIcon, 
+  TagIcon, 
+  ClockIcon 
+} from "@heroicons/react/24/outline";
 
 interface InsightsData {
   totalNotes: number;
@@ -42,33 +51,33 @@ export default function InsightsPage() {
 
   return (
     <div className="insights-page">
-      <h2>📊 Productivity Insights</h2>
+      <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}><ChartBarIcon className="w-6 h-6" /> Productivity Insights</h2>
 
       <div className="stats-grid">
         <div className="stat-card">
-          <div className="stat-card-icon">📝</div>
+          <div className="stat-card-icon"><DocumentTextIcon className="w-6 h-6" style={{ margin: "0 auto" }} /></div>
           <div className="stat-card-value" style={{ color: "var(--accent)" }}>{data.totalNotes}</div>
           <div className="stat-card-label">Active Notes</div>
         </div>
         <div className="stat-card">
-          <div className="stat-card-icon">📦</div>
+          <div className="stat-card-icon"><ArchiveBoxIcon className="w-6 h-6" style={{ margin: "0 auto" }} /></div>
           <div className="stat-card-value" style={{ color: "var(--warning)" }}>{data.archivedNotes}</div>
           <div className="stat-card-label">Archived</div>
         </div>
         <div className="stat-card">
-          <div className="stat-card-icon">🌐</div>
+          <div className="stat-card-icon"><GlobeAltIcon className="w-6 h-6" style={{ margin: "0 auto" }} /></div>
           <div className="stat-card-value" style={{ color: "var(--info)" }}>{data.publicNotes}</div>
           <div className="stat-card-label">Public Notes</div>
         </div>
         <div className="stat-card">
-          <div className="stat-card-icon">🤖</div>
+          <div className="stat-card-icon"><SparklesIcon className="w-6 h-6" style={{ margin: "0 auto" }} /></div>
           <div className="stat-card-value" style={{ color: "var(--success)" }}>{data.aiStats.total}</div>
           <div className="stat-card-label">AI Generations</div>
         </div>
       </div>
 
       <div className="insights-section">
-        <h3>📈 Weekly Activity</h3>
+        <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}><ChartBarIcon className="w-5 h-5" /> Weekly Activity</h3>
         <div className="card" style={{ padding: 24 }}>
           <div className="activity-chart">
             {data.weeklyActivity.map((day) => (
@@ -90,7 +99,7 @@ export default function InsightsPage() {
 
       {data.aiStats.total > 0 && (
         <div className="insights-section">
-          <h3>🤖 AI Usage Breakdown</h3>
+          <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}><SparklesIcon className="w-5 h-5" /> AI Usage Breakdown</h3>
           <div className="stats-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))" }}>
             <div className="stat-card">
               <div className="stat-card-value" style={{ fontSize: "1.5rem", color: "var(--accent)" }}>
@@ -116,7 +125,7 @@ export default function InsightsPage() {
 
       {data.mostUsedTags.length > 0 && (
         <div className="insights-section">
-          <h3>🏷️ Most Used Tags</h3>
+          <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}><TagIcon className="w-5 h-5" /> Most Used Tags</h3>
           <div className="tag-cloud">
             {data.mostUsedTags.map((tag) => (
               <div key={tag.name} className="tag-cloud-item">
@@ -129,7 +138,7 @@ export default function InsightsPage() {
 
       {data.recentlyEdited.length > 0 && (
         <div className="insights-section">
-          <h3>🕐 Recently Edited</h3>
+          <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}><ClockIcon className="w-5 h-5" /> Recently Edited</h3>
           <div className="card" style={{ padding: 0 }}>
             {data.recentlyEdited.map((note, i) => (
               <div

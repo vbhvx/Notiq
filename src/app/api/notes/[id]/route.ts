@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { updateNoteSchema, parseBody } from "@/lib/validate";
+import { logger } from "@/lib/logger";
 
 export async function GET(
   req: NextRequest,
@@ -54,65 +56,79 @@ export async function PATCH(
 
   try {
     const body = await req.json();
-    const { title, content, isArchived, isPublic, tags } = body;
-
-    const updateData: Record<string, unknown> = {};
-    if (title !== undefined) updateData.title = title;
-    if (content !== undefined) updateData.content = content;
-    if (isArchived !== undefined) updateData.isArchived = isArchived;
-    if (isPublic !== undefined) updateData.isPublic = isPublic;
-
-    const note = await prisma.note.update({
-      where: { id },
-      data: updateData,
-    });
-
-    
-    if (tags !== undefined && Array.isArray(tags)) {
-      await prisma.noteTag.deleteMany({
-        where: { noteId: id },
-      });
-
-      for (const tagName of tags) {
-        const tag = await prisma.tag.upsert({
-          where: {
-            name_userId: {
-              name: tagName.toLowerCase().trim(),
-              userId: session.user.id,
-            },
-          },
-          create: {
-            name: tagName.toLowerCase().trim(),
-            userId: session.user.id,
-          },
-          update: {},
-        });
-
-        await prisma.noteTag.create({
-          data: {
-            noteId: note.id,
-            tagId: tag.id,
-          },
-        });
-      }
+    const parsed = parseBody(updateNoteSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    const fullNote = await prisma.note.findUnique({
-      where: { id },
-      include: {
-        tags: {
-          include: { tag: true },
+    const { title, content, isArchived, isPublic, tags } = parsed.data;
+
+    // Use transaction for atomic update of note + tags
+    const fullNote = await prisma.$transaction(async (tx) => {
+      const updateData: Record<string, unknown> = {};
+      if (title !== undefined) updateData.title = title;
+      if (content !== undefined) updateData.content = content;
+      if (isArchived !== undefined) updateData.isArchived = isArchived;
+      if (isPublic !== undefined) updateData.isPublic = isPublic;
+
+      const note = await tx.note.update({
+        where: { id },
+        data: updateData,
+      });
+
+      if (tags !== undefined && Array.isArray(tags)) {
+        // Delete existing tags and recreate — all within transaction
+        await tx.noteTag.deleteMany({
+          where: { noteId: id },
+        });
+
+        for (const tagName of tags) {
+          const tag = await tx.tag.upsert({
+            where: {
+              name_userId: {
+                name: tagName,
+                userId: session.user!.id!,
+              },
+            },
+            create: {
+              name: tagName,
+              userId: session.user!.id!,
+            },
+            update: {},
+          });
+
+          await tx.noteTag.create({
+            data: {
+              noteId: note.id,
+              tagId: tag.id,
+            },
+          });
+        }
+      }
+
+      return tx.note.findUnique({
+        where: { id },
+        include: {
+          tags: {
+            include: { tag: true },
+          },
         },
-      },
+      });
     });
 
     return NextResponse.json({
       ...fullNote,
       tags: fullNote?.tags.map((nt: any) => nt.tag) || [],
-      actionItems: fullNote?.actionItems ? JSON.parse(fullNote.actionItems) : [],
+      actionItems: fullNote?.actionItems
+        ? JSON.parse(fullNote.actionItems)
+        : [],
     });
   } catch (error) {
-    console.error("Update note error:", error);
+    logger.error("Update note error", error, {
+      userId: session.user.id,
+      method: "PATCH",
+      path: `/api/notes/${id}`,
+    });
     return NextResponse.json(
       { error: "Failed to update note" },
       { status: 500 }
@@ -140,6 +156,12 @@ export async function DELETE(
   }
 
   await prisma.note.delete({ where: { id } });
+
+  logger.info("Note deleted", {
+    userId: session.user.id,
+    method: "DELETE",
+    path: `/api/notes/${id}`,
+  });
 
   return NextResponse.json({ message: "Note deleted" });
 }

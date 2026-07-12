@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { generateSummary, extractActionItems, suggestTitle } from "@/lib/ai";
+import { aiTypeSchema, parseBody } from "@/lib/validate";
+import { rateLimit } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
+
+// Rate limit: 20 AI generations per hour per user
+const AI_LIMIT = 20;
+const AI_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+// Max content length to send to AI (to protect API costs)
+const MAX_AI_CONTENT_LENGTH = 50000;
 
 export async function POST(
   req: NextRequest,
@@ -10,6 +20,28 @@ export async function POST(
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limiting per user
+  const rl = rateLimit(`ai:${session.user.id}`, AI_LIMIT, AI_WINDOW_MS);
+  if (!rl.success) {
+    logger.warn("AI rate limit exceeded", {
+      userId: session.user.id,
+      method: "POST",
+      path: "/api/notes/ai",
+    });
+    return NextResponse.json(
+      {
+        error: `AI generation limit reached (${AI_LIMIT}/hour). Please try again later.`,
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil(rl.resetMs / 1000)),
+          "X-RateLimit-Remaining": String(rl.remaining),
+        },
+      }
+    );
   }
 
   const { id } = await params;
@@ -23,11 +55,20 @@ export async function POST(
   }
 
   try {
-    const { type } = await req.json();
+    const body = await req.json();
+    const parsed = parseBody(aiTypeSchema, body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
+    }
 
-    if (!["summary", "action_items", "title", "all"].includes(type)) {
+    const { type } = parsed.data;
+
+    // Guard against excessively large content
+    if (note.content.length > MAX_AI_CONTENT_LENGTH) {
       return NextResponse.json(
-        { error: "Invalid type. Use: summary, action_items, title, or all" },
+        {
+          error: `Content is too long for AI processing (${note.content.length} chars, max ${MAX_AI_CONTENT_LENGTH}). Please shorten the note.`,
+        },
         { status: 400 }
       );
     }
@@ -83,9 +124,19 @@ export async function POST(
       }
     }
 
+    logger.info("AI generation completed", {
+      userId: session.user.id,
+      method: "POST",
+      path: `/api/notes/${id}/ai`,
+    });
+
     return NextResponse.json(result);
   } catch (error) {
-    console.error("AI generation error:", error);
+    logger.error("AI generation error", error, {
+      userId: session.user.id,
+      method: "POST",
+      path: `/api/notes/${id}/ai`,
+    });
     return NextResponse.json(
       { error: "Failed to generate AI content" },
       { status: 500 }
