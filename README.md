@@ -147,7 +147,7 @@ User ──< Note ──< NoteTag >── Tag
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/notiq.git
+git clone https://github.com/vaibhav-0924/Notiq.git
 cd notiq
 
 # 2. Install dependencies
