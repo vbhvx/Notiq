@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 
-import { useSession, signOut } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "../providers";
 import { ReactNode } from "react";
@@ -12,12 +11,10 @@ import {
   ChartBarIcon, 
   CommandLineIcon, 
   MoonIcon, 
-  SunIcon, 
-  ArrowRightOnRectangleIcon
+  SunIcon,
 } from "@heroicons/react/24/outline";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
-  const { data: session } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
@@ -77,19 +74,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 fontSize: "0.8rem", fontWeight: 600, color: "#fff",
               }}
             >
-              {session?.user?.name?.[0]?.toUpperCase() || "U"}
+              N
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: "0.85rem", fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {session?.user?.name || "User"}
-              </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--text-tertiary)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {session?.user?.email}
+                Notiq
               </div>
             </div>
-            <button className="btn btn-ghost btn-sm" onClick={() => signOut({ callbackUrl: "/auth/login" })} title="Sign out">
-              <ArrowRightOnRectangleIcon className="w-5 h-5" />
-            </button>
           </div>
         </div>
       </aside>

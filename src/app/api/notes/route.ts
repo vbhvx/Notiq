@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getDefaultUserId } from "@/lib/user";
 import { prisma } from "@/lib/prisma";
 import { paginationSchema, createNoteSchema, parseBody } from "@/lib/validate";
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await getDefaultUserId();
 
   const { searchParams } = new URL(req.url);
   const params = paginationSchema.safeParse({
@@ -29,7 +26,7 @@ export async function GET(req: NextRequest) {
   const { page, limit, search, tag, sort, archived } = params.data;
 
   const where: Record<string, unknown> = {
-    userId: session.user.id,
+    userId,
     isArchived: archived,
   };
 
@@ -59,10 +56,8 @@ export async function GET(req: NextRequest) {
     orderBy.updatedAt = "desc";
   }
 
-  // Get total count for pagination
   const total = await prisma.note.count({ where });
 
-  // Paginated query
   const notes = await prisma.note.findMany({
     where,
     orderBy,
@@ -95,10 +90,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await getDefaultUserId();
 
   try {
     const body = await req.json();
@@ -109,13 +101,12 @@ export async function POST(req: NextRequest) {
 
     const { title, content, tags } = parsed.data;
 
-    // Use transaction to ensure atomicity of note + tags creation
     const fullNote = await prisma.$transaction(async (tx) => {
       const note = await tx.note.create({
         data: {
           title: title || "Untitled",
           content: content || "",
-          userId: session.user!.id!,
+          userId,
         },
       });
 
@@ -125,12 +116,12 @@ export async function POST(req: NextRequest) {
             where: {
               name_userId: {
                 name: tagName,
-                userId: session.user!.id!,
+                userId,
               },
             },
             create: {
               name: tagName,
-              userId: session.user!.id!,
+              userId,
             },
             update: {},
           });
@@ -157,7 +148,7 @@ export async function POST(req: NextRequest) {
     });
 
     console.log("Note created", {
-      userId: session.user.id,
+      userId,
       method: "POST",
       path: "/api/notes",
     });
@@ -174,7 +165,7 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     console.error("Create note error", error, {
-      userId: session.user.id,
+      userId,
       method: "POST",
       path: "/api/notes",
     });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getDefaultUserId } from "@/lib/user";
 import { prisma } from "@/lib/prisma";
 import { updateNoteSchema, parseBody } from "@/lib/validate";
 
@@ -7,15 +7,11 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  const userId = await getDefaultUserId();
   const { id } = await params;
 
   const note = await prisma.note.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId },
     include: {
       tags: {
         include: { tag: true },
@@ -38,15 +34,11 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  const userId = await getDefaultUserId();
   const { id } = await params;
 
   const existingNote = await prisma.note.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId },
   });
 
   if (!existingNote) {
@@ -62,7 +54,6 @@ export async function PATCH(
 
     const { title, content, isArchived, isPublic, tags } = parsed.data;
 
-    // Use transaction for atomic update of note + tags
     const fullNote = await prisma.$transaction(async (tx) => {
       const updateData: Record<string, unknown> = {};
       if (title !== undefined) updateData.title = title;
@@ -76,7 +67,6 @@ export async function PATCH(
       });
 
       if (tags !== undefined && Array.isArray(tags)) {
-        // Delete existing tags and recreate — all within transaction
         await tx.noteTag.deleteMany({
           where: { noteId: id },
         });
@@ -86,12 +76,12 @@ export async function PATCH(
             where: {
               name_userId: {
                 name: tagName,
-                userId: session.user!.id!,
+                userId,
               },
             },
             create: {
               name: tagName,
-              userId: session.user!.id!,
+              userId,
             },
             update: {},
           });
@@ -124,7 +114,7 @@ export async function PATCH(
     });
   } catch (error) {
     console.error("Update note error", error, {
-      userId: session.user.id,
+      userId,
       method: "PATCH",
       path: `/api/notes/${id}`,
     });
@@ -139,15 +129,11 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  const userId = await getDefaultUserId();
   const { id } = await params;
 
   const note = await prisma.note.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId },
   });
 
   if (!note) {
@@ -157,7 +143,7 @@ export async function DELETE(
   await prisma.note.delete({ where: { id } });
 
   console.log("Note deleted", {
-    userId: session.user.id,
+    userId,
     method: "DELETE",
     path: `/api/notes/${id}`,
   });

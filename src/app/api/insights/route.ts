@@ -1,17 +1,11 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getDefaultUserId } from "@/lib/user";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await getDefaultUserId();
 
   try {
-    const userId = session.user.id;
-
-    // Run independent queries in parallel for better performance
     const [totalNotes, archivedNotes, publicNotes, recentlyEdited, tags, totalAiUsage, aiUsageByType] =
       await Promise.all([
         prisma.note.count({
@@ -78,7 +72,6 @@ export async function GET() {
       ),
     };
 
-    // Fix N+1: Get weekly activity with TWO queries instead of 14
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     sevenDaysAgo.setHours(0, 0, 0, 0);
@@ -101,7 +94,6 @@ export async function GET() {
       }),
     ]);
 
-    // Aggregate by day in JavaScript instead of N database queries
     const weeklyActivity = [];
     for (let i = 6; i >= 0; i--) {
       const dayStart = new Date();
@@ -138,7 +130,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Insights error", error, {
-      userId: session.user.id,
+      userId,
       method: "GET",
       path: "/api/insights",
     });

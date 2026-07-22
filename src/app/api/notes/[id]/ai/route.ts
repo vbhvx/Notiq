@@ -1,31 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getDefaultUserId } from "@/lib/user";
 import { prisma } from "@/lib/prisma";
 import { generateSummary, extractActionItems, suggestTitle } from "@/lib/ai";
 import { aiTypeSchema, parseBody } from "@/lib/validate";
 import { rateLimit } from "@/lib/rate-limit";
 
-// Rate limit: 20 AI generations per hour per user
 const AI_LIMIT = 20;
-const AI_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-// Max content length to send to AI (to protect API costs)
+const AI_WINDOW_MS = 60 * 60 * 1000;
 const MAX_AI_CONTENT_LENGTH = 50000;
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const userId = await getDefaultUserId();
 
-  // Rate limiting per user
-  const rl = rateLimit(`ai:${session.user.id}`, AI_LIMIT, AI_WINDOW_MS);
+  const rl = rateLimit(`ai:${userId}`, AI_LIMIT, AI_WINDOW_MS);
   if (!rl.success) {
     console.warn("AI rate limit exceeded", {
-      userId: session.user.id,
+      userId,
       method: "POST",
       path: "/api/notes/ai",
     });
@@ -46,7 +39,7 @@ export async function POST(
   const { id } = await params;
 
   const note = await prisma.note.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId },
   });
 
   if (!note) {
@@ -62,7 +55,6 @@ export async function POST(
 
     const { type } = parsed.data;
 
-    // Guard against excessively large content
     if (note.content.length > MAX_AI_CONTENT_LENGTH) {
       return NextResponse.json(
         {
@@ -84,7 +76,7 @@ export async function POST(
 
       await prisma.aiUsageLog.create({
         data: {
-          userId: session.user.id,
+          userId,
           noteId: id,
           type: "summary",
         },
@@ -102,7 +94,7 @@ export async function POST(
 
       await prisma.aiUsageLog.create({
         data: {
-          userId: session.user.id,
+          userId,
           noteId: id,
           type: "action_items",
         },
@@ -115,7 +107,7 @@ export async function POST(
       if (type === "all" || type === "title") {
         await prisma.aiUsageLog.create({
           data: {
-            userId: session.user.id,
+            userId,
             noteId: id,
             type: "title",
           },
@@ -124,7 +116,7 @@ export async function POST(
     }
 
     console.log("AI generation completed", {
-      userId: session.user.id,
+      userId,
       method: "POST",
       path: `/api/notes/${id}/ai`,
     });
@@ -132,7 +124,7 @@ export async function POST(
     return NextResponse.json(result);
   } catch (error) {
     console.error("AI generation error", error, {
-      userId: session.user.id,
+      userId,
       method: "POST",
       path: `/api/notes/${id}/ai`,
     });
