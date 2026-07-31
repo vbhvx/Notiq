@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["ws"],
   // Don't expose Next.js in response headers
   poweredByHeader: false,
 
