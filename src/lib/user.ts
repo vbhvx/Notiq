@@ -1,8 +1,14 @@
 import { prisma } from "@/lib/prisma";
 
+let cachedUserId: string | null = null;
+
 export async function getDefaultUserId(): Promise<string> {
   if (process.env.DEFAULT_USER_ID) {
     return process.env.DEFAULT_USER_ID;
+  }
+
+  if (cachedUserId) {
+    return cachedUserId;
   }
 
   let user = await prisma.user.findFirst();
@@ -15,5 +21,6 @@ export async function getDefaultUserId(): Promise<string> {
     });
   }
 
+  cachedUserId = user.id;
   return user.id;
 }
