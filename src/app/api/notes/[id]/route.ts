@@ -54,55 +54,53 @@ export async function PATCH(
 
     const { title, content, isArchived, isPublic, tags } = parsed.data;
 
-    const fullNote = await prisma.$transaction(async (tx) => {
-      const updateData: Record<string, unknown> = {};
-      if (title !== undefined) updateData.title = title;
-      if (content !== undefined) updateData.content = content;
-      if (isArchived !== undefined) updateData.isArchived = isArchived;
-      if (isPublic !== undefined) updateData.isPublic = isPublic;
+    const updateData: Record<string, unknown> = {};
+    if (title !== undefined) updateData.title = title;
+    if (content !== undefined) updateData.content = content;
+    if (isArchived !== undefined) updateData.isArchived = isArchived;
+    if (isPublic !== undefined) updateData.isPublic = isPublic;
 
-      const note = await tx.note.update({
-        where: { id },
-        data: updateData,
+    const note = await prisma.note.update({
+      where: { id },
+      data: updateData,
+    });
+
+    if (tags !== undefined && Array.isArray(tags)) {
+      await prisma.noteTag.deleteMany({
+        where: { noteId: id },
       });
 
-      if (tags !== undefined && Array.isArray(tags)) {
-        await tx.noteTag.deleteMany({
-          where: { noteId: id },
-        });
-
-        for (const tagName of tags) {
-          const tag = await tx.tag.upsert({
-            where: {
-              name_userId: {
-                name: tagName,
-                userId,
-              },
-            },
-            create: {
+      for (const tagName of tags) {
+        const tag = await prisma.tag.upsert({
+          where: {
+            name_userId: {
               name: tagName,
               userId,
             },
-            update: {},
-          });
-
-          await tx.noteTag.create({
-            data: {
-              noteId: note.id,
-              tagId: tag.id,
-            },
-          });
-        }
-      }
-
-      return tx.note.findUnique({
-        where: { id },
-        include: {
-          tags: {
-            include: { tag: true },
           },
+          create: {
+            name: tagName,
+            userId,
+          },
+          update: {},
+        });
+
+        await prisma.noteTag.create({
+          data: {
+            noteId: note.id,
+            tagId: tag.id,
+          },
+        });
+      }
+    }
+
+    const fullNote = await prisma.note.findUnique({
+      where: { id },
+      include: {
+        tags: {
+          include: { tag: true },
         },
-      });
+      },
     });
 
     return NextResponse.json({

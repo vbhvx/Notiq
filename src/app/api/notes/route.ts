@@ -101,50 +101,48 @@ export async function POST(req: NextRequest) {
 
     const { title, content, tags } = parsed.data;
 
-    const fullNote = await prisma.$transaction(async (tx) => {
-      const note = await tx.note.create({
-        data: {
-          title: title || "Untitled",
-          content: content || "",
-          userId,
-        },
-      });
+    const note = await prisma.note.create({
+      data: {
+        title: title || "Untitled",
+        content: content || "",
+        userId,
+      },
+    });
 
-      if (tags && tags.length > 0) {
-        for (const tagName of tags) {
-          const tag = await tx.tag.upsert({
-            where: {
-              name_userId: {
-                name: tagName,
-                userId,
-              },
-            },
-            create: {
+    if (tags && tags.length > 0) {
+      for (const tagName of tags) {
+        const tag = await prisma.tag.upsert({
+          where: {
+            name_userId: {
               name: tagName,
               userId,
             },
-            update: {},
-          });
+          },
+          create: {
+            name: tagName,
+            userId,
+          },
+          update: {},
+        });
 
-          await tx.noteTag.create({
-            data: {
-              noteId: note.id,
-              tagId: tag.id,
-            },
-          });
-        }
+        await prisma.noteTag.create({
+          data: {
+            noteId: note.id,
+            tagId: tag.id,
+          },
+        });
       }
+    }
 
-      return tx.note.findUnique({
-        where: { id: note.id },
-        include: {
-          tags: {
-            include: {
-              tag: true,
-            },
+    const fullNote = await prisma.note.findUnique({
+      where: { id: note.id },
+      include: {
+        tags: {
+          include: {
+            tag: true,
           },
         },
-      });
+      },
     });
 
     console.log("Note created", {
