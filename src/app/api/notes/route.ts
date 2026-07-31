@@ -88,10 +88,10 @@ export async function GET(req: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Fetch notes error", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch notes" },
+      { error: error instanceof Error ? error.message : "Failed to fetch notes" },
       { status: 500 }
     );
   }
