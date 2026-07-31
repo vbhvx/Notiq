@@ -3,7 +3,7 @@ services:
     name: notiq
     env: node
     plan: starter
-    buildCommand: npx prisma migrate deploy && npm run build
+    buildCommand: npx -y prisma db push --accept-data-loss && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV
@@ -12,11 +12,5 @@ services:
         value: "20"
       - key: DATABASE_URL
         sync: false # Must be a hosted DB like Neon or Render Managed Postgres, not localhost!
-      - key: NEXTAUTH_SECRET
-        generateValue: true
-      - key: NEXTAUTH_URL
-        value: https://notiq-loq2.onrender.com
-      - key: AUTH_TRUST_HOST
-        value: "true"
       - key: GEMINI_API_KEY
         sync: false # Never commit API keys to this file!

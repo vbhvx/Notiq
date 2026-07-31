@@ -255,7 +255,7 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {/* Pagination controls */}
+
           {pagination.totalPages > 1 && (
             <div
               style={{

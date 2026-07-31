@@ -11,7 +11,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log error for observability
+
     console.error("[GlobalError]", error);
   }, [error]);
 

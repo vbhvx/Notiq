@@ -1,21 +1,20 @@
 # Notiq — AI-Powered Notes Workspace
 
-> A lightweight, collaborative, AI-powered notes workspace built with Next.js, Prisma, and Google Gemini.
+> A lightweight, collaborative, AI-powered notes workspace built with Next.js, Prisma, and Google Gemini. Designed for unrestricted public access without requiring authentication.
 
-![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16.2.6-black?logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?logo=typescript)
-![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma)
+![Prisma](https://img.shields.io/badge/Prisma-5-2D3748?logo=prisma)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql)
 
 ---
 
 ## ✨ Features
 
-### 🔐 Authentication
-- User signup and login with credentials
-- JWT-based persistent sessions (30-day expiry)
-- Protected routes via middleware
-- Secure password hashing with bcrypt (12 rounds)
+### 🔓 Unrestricted Public Workspace
+- Zero login or signup required — open access to view, create, and edit notes
+- Frictionless collaborative note taking and sharing
+- Lightweight default profile creation for data relations
 
 ### 📝 Notes Workspace
 - Create, edit, and delete notes
@@ -25,7 +24,7 @@
 - Archive and restore notes
 - Save indicator (saved/saving/unsaved states)
 
-### 🤖 AI Integration (Google Gemini)
+### 🤖 AI Integration (Google Gemini 3.5 Flash)
 - **AI-generated summaries** — concise 2-3 sentence note summaries
 - **Action item extraction** — pull tasks from note content
 - **Title suggestions** — smart title from raw content
@@ -42,7 +41,6 @@
 - Generate unique share links for any note
 - Toggle public/private visibility
 - Beautiful public-facing read-only page
-- No login required to view shared notes
 - Displays AI summary and action items on shared page
 
 ### 📊 Productivity Insights
@@ -60,9 +58,8 @@
 - ✅ **Optimistic UI** — instant visual feedback
 
 ### 🛡️ Production Readiness
-- **Security**: Strict security headers, XSS sanitization (DOMPurify), and robust input validation.
-- **Performance**: N+1 query optimizations, database connection pooling, and strict React hooks linting.
-- **CI/CD Pipeline**: GitHub Actions for automated linting, type-checking, and Render.com deployment.
+- **Security**: Strict security headers, XSS sanitization (DOMPurify), API route rate-limiting, and robust input validation via Zod.
+- **Performance**: Pagination, N+1 query optimizations, optimized Postgres queries, and strict React hooks linting.
 
 ---
 
@@ -71,25 +68,19 @@
 ```
 notiq/
 ├── prisma/
-│   ├── schema.prisma          # Database schema (User, Note, Tag, AiUsageLog)
-│   └── migrations/            # Migration history
+│   └── schema.prisma          # Database schema (User, Note, Tag, AiUsageLog)
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── auth/
-│   │   │   │   ├── [...nextauth]/route.ts  # NextAuth handler
-│   │   │   │   └── signup/route.ts         # User registration
+│   │   │   ├── health/route.ts             # Health check endpoint
 │   │   │   ├── notes/
-│   │   │   │   ├── route.ts                # List & create notes
+│   │   │   │   ├── route.ts                # List (paginated) & create notes
 │   │   │   │   └── [id]/
 │   │   │   │       ├── route.ts            # CRUD single note
 │   │   │   │       └── ai/route.ts         # AI generation
 │   │   │   ├── shared/[shareId]/route.ts   # Public note access
 │   │   │   ├── insights/route.ts           # Dashboard data
 │   │   │   └── tags/route.ts               # Tag listing
-│   │   ├── auth/
-│   │   │   ├── login/page.tsx              # Login page
-│   │   │   └── signup/page.tsx             # Signup page
 │   │   ├── dashboard/
 │   │   │   ├── layout.tsx                  # Sidebar layout
 │   │   │   ├── page.tsx                    # Notes workspace
@@ -99,15 +90,16 @@ notiq/
 │   │   ├── shared/[shareId]/page.tsx       # Public shared note
 │   │   ├── layout.tsx                      # Root layout
 │   │   ├── page.tsx                        # Landing redirect
-│   │   ├── providers.tsx                   # Theme, Toast, Session
+│   │   ├── providers.tsx                   # Theme, Toast
 │   │   └── globals.css                     # Design system
-│   ├── lib/
-│   │   ├── auth.ts                         # NextAuth config
-│   │   ├── prisma.ts                       # Prisma client
-│   │   └── ai.ts                           # Gemini AI service
-│   └── middleware.ts                       # Route protection
-├── .env.example
-├── prisma.config.ts
+│   └── lib/
+│       ├── prisma.ts                       # Prisma client initialization
+│       ├── user.ts                         # Default profile resolution
+│       ├── ai.ts                           # Gemini AI service
+│       ├── rate-limit.ts                   # In-memory API rate limiter
+│       ├── sanitize.ts                     # HTML sanitization utilities
+│       └── validate.ts                     # Zod schemas for API validation
+├── .env.example               # Example environment configuration
 └── package.json
 ```
 
@@ -115,11 +107,10 @@ notiq/
 
 | Layer | Technology |
 |-------|-----------|
-| **Framework** | Next.js 16 (App Router + Turbopack) |
-| **Language** | TypeScript |
-| **Database** | PostgreSQL via Prisma 7 |
-| **Auth** | NextAuth.js v5 (Auth.js) with JWT |
-| **AI** | Google Gemini 2.0 Flash |
+| **Framework** | Next.js 16.2.6 (App Router + Turbopack) |
+| **Language** | TypeScript 5 |
+| **Database** | PostgreSQL via Prisma 5 |
+| **AI** | Google Gemini 3.5 Flash |
 | **Styling** | Vanilla CSS (custom design system) |
 
 ### Database Schema
@@ -129,9 +120,9 @@ User ──< Note ──< NoteTag >── Tag
   └──< AiUsageLog
 ```
 
-- **User** — Authentication and identity
+- **User** — Unrestricted default workspace identity
 - **Note** — Content, metadata, share settings
-- **Tag** — User-scoped tag labels
+- **Tag** — Scoped tag labels
 - **NoteTag** — Many-to-many junction
 - **AiUsageLog** — AI feature usage tracking
 
@@ -140,8 +131,10 @@ User ──< Note ──< NoteTag >── Tag
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+
+- Node.js 18+ or 20+
 - npm
+- A PostgreSQL database (e.g., local, Neon, Supabase, Railway)
+- Google Gemini API Key
 
 ### Installation
 
@@ -157,8 +150,8 @@ npm install
 cp .env.example .env
 # Edit .env with your values (see below)
 
-# 4. Run database migrations
-npx prisma migrate dev
+# 4. Synchronize database schema
+npx prisma db push
 
 # 5. Start the dev server
 npm run dev
@@ -170,9 +163,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/notiq"
-NEXTAUTH_SECRET="generate-a-secret-with-openssl-rand-base64-32"
-NEXTAUTH_URL="http://localhost:3000"
 GEMINI_API_KEY="your-gemini-api-key-from-aistudio-google-dev"
+NODE_ENV="development"
 ```
 
 Get your Gemini API key: [Google AI Studio](https://aistudio.google.dev/apikey)
@@ -181,57 +173,48 @@ Get your Gemini API key: [Google AI Studio](https://aistudio.google.dev/apikey)
 
 ## 📡 API Endpoints
 
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/api/auth/signup` | No | Register new user |
-| `POST` | `/api/auth/[...nextauth]` | No | Login/session |
-| `GET` | `/api/notes` | Yes | List notes (search, filter, sort) |
-| `POST` | `/api/notes` | Yes | Create a note |
-| `GET` | `/api/notes/:id` | Yes | Get single note |
-| `PATCH` | `/api/notes/:id` | Yes | Update note |
-| `DELETE` | `/api/notes/:id` | Yes | Delete note |
-| `POST` | `/api/notes/:id/ai` | Yes | Generate AI content |
-| `GET` | `/api/shared/:shareId` | No | Get public shared note |
-| `GET` | `/api/insights` | Yes | Productivity dashboard |
-| `GET` | `/api/tags` | Yes | List user tags |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/health` | Health check and uptime |
+| `GET` | `/api/notes` | List notes with pagination (search, filter, sort) |
+| `POST` | `/api/notes` | Create a note |
+| `GET` | `/api/notes/:id` | Get single note |
+| `PATCH` | `/api/notes/:id` | Update note |
+| `DELETE` | `/api/notes/:id` | Delete note |
+| `POST` | `/api/notes/:id/ai` | Generate AI content (summary, action items, title) |
+| `GET` | `/api/shared/:shareId` | Get public shared note |
+| `GET` | `/api/insights` | Productivity dashboard statistics |
+| `GET` | `/api/tags` | List user tags |
 
 ### Sample API Responses
-
-<details>
-<summary>POST /api/auth/signup</summary>
-
-```json
-{
-  "message": "Account created successfully",
-  "user": {
-    "id": "cm4xyz123",
-    "name": "John Doe",
-    "email": "john@example.com",
-    "createdAt": "2026-05-19T12:00:00.000Z"
-  }
-}
-```
-</details>
 
 <details>
 <summary>GET /api/notes</summary>
 
 ```json
-[
-  {
-    "id": "cm4abc456",
-    "title": "Sprint Planning Notes",
-    "content": "## Agenda\n- Review sprint goals...",
-    "summary": "Weekly project planning discussion covering sprint goals, task assignments, and blocker resolution.",
-    "actionItems": ["Prepare UI mockups by Friday", "Review API structure"],
-    "isArchived": false,
-    "isPublic": false,
-    "shareId": "cm4share789",
-    "tags": [{ "id": "t1", "name": "work" }, { "id": "t2", "name": "meeting" }],
-    "createdAt": "2026-05-19T12:00:00.000Z",
-    "updatedAt": "2026-05-19T12:30:00.000Z"
+{
+  "notes": [
+    {
+      "id": "cm4abc456",
+      "title": "Sprint Planning Notes",
+      "content": "## Agenda\n- Review sprint goals...",
+      "summary": "Weekly project planning discussion covering sprint goals, task assignments, and blocker resolution.",
+      "actionItems": ["Prepare UI mockups by Friday", "Review API structure"],
+      "isArchived": false,
+      "isPublic": false,
+      "shareId": "cm4share789",
+      "tags": [{ "id": "t1", "name": "work" }, { "id": "t2", "name": "meeting" }],
+      "createdAt": "2026-05-19T12:00:00.000Z",
+      "updatedAt": "2026-05-19T12:30:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 12,
+    "totalPages": 1
   }
-]
+}
 ```
 </details>
 
@@ -256,7 +239,7 @@ Get your Gemini API key: [Google AI Studio](https://aistudio.google.dev/apikey)
   "archivedNotes": 3,
   "publicNotes": 2,
   "recentlyEdited": [
-    { "id": "cm4abc456", "title": "Sprint Planning", "updatedAt": "2026-05-19T12:30:00Z" }
+    { "id": "cm4abc456", "title": "Sprint Planning", "updatedAt": "2026-05-19T12:30:00.000Z" }
   ],
   "mostUsedTags": [
     { "name": "work", "count": 8 },
@@ -283,6 +266,9 @@ npm run build
 
 # Run the dev server and test manually
 npm run dev
+
+# Run ESLint to ensure code quality
+npm run lint
 ```
 
 ---

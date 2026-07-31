@@ -1,19 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-/**
- * Health check endpoint.
- * Verifies the application is running and the database is reachable.
- *
- * GET /api/health
- * Returns: { status: "ok" | "degraded", timestamp, uptime, db }
- */
+
 export async function GET() {
   const startTime = Date.now();
   let dbStatus: "connected" | "disconnected" = "disconnected";
 
   try {
-    // Test database connectivity with a lightweight query
+
     await prisma.$queryRaw`SELECT 1`;
     dbStatus = "connected";
   } catch (error) {

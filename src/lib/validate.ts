@@ -1,11 +1,7 @@
-/**
- * Zod validation schemas for all API inputs.
- * Centralizes validation logic and provides type-safe parsing.
- */
+// Zod validation schemas for API inputs
 
 import { z } from "zod";
 
-// ── Note Schemas ──────────────────────────────────────────────
 
 const tagSchema = z
   .string()
@@ -46,7 +42,6 @@ export const updateNoteSchema = z.object({
     .optional(),
 });
 
-// ── AI Schemas ────────────────────────────────────────────────
 
 export const aiTypeSchema = z.object({
   type: z.enum(["summary", "action_items", "title", "all"], {
@@ -56,7 +51,6 @@ export const aiTypeSchema = z.object({
   }),
 });
 
-// ── Pagination Schemas ────────────────────────────────────────
 
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -70,12 +64,7 @@ export const paginationSchema = z.object({
     .transform((v) => v === "true"),
 });
 
-// ── Utility ───────────────────────────────────────────────────
-
-/**
- * Parse and validate request body with a Zod schema.
- * Returns { success: true, data } or { success: false, error: string }.
- */
+// Parse and validate request body with a Zod schema
 export function parseBody<T>(
   schema: z.ZodSchema<T>,
   data: unknown

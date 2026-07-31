@@ -1,8 +1,4 @@
-/**
- * In-memory sliding window rate limiter.
- * Suitable for single-instance deployments (Render free tier).
- * For multi-instance deployments, replace with Redis-backed solution (e.g. @upstash/ratelimit).
- */
+// In-memory sliding window rate limiter
 
 interface RateLimitEntry {
   timestamps: number[];
@@ -10,7 +6,7 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>();
 
-// Cleanup old entries every 5 minutes to prevent memory leaks
+
 const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
 
 let lastCleanup = Date.now();
@@ -28,14 +24,7 @@ function cleanup(windowMs: number) {
   }
 }
 
-/**
- * Check if a request should be rate-limited.
- *
- * @param key   - Unique identifier (e.g. IP address, user ID)
- * @param limit - Maximum number of requests allowed in the window
- * @param windowMs - Time window in milliseconds
- * @returns { success: boolean, remaining: number, resetMs: number }
- */
+
 export function rateLimit(
   key: string,
   limit: number,
@@ -50,7 +39,7 @@ export function rateLimit(
     store.set(key, entry);
   }
 
-  // Remove timestamps outside the current window
+
   entry.timestamps = entry.timestamps.filter((t) => now - t < windowMs);
 
   if (entry.timestamps.length >= limit) {
@@ -67,17 +56,3 @@ export function rateLimit(
   };
 }
 
-/**
- * Get a rate limit key from a request's IP address.
- */
-export function getClientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) {
-    return forwarded.split(",")[0].trim();
-  }
-  const realIp = request.headers.get("x-real-ip");
-  if (realIp) {
-    return realIp;
-  }
-  return "unknown";
-}
