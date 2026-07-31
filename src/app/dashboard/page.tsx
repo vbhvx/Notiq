@@ -63,6 +63,8 @@ export default function DashboardPage() {
         const data = await res.json();
         setNotes(data.notes);
         setPagination(data.pagination);
+      } else {
+        throw new Error();
       }
     } catch {
       addToast("Failed to fetch notes", "error");
@@ -77,6 +79,8 @@ export default function DashboardPage() {
       if (res.ok) {
         const data = await res.json();
         setAllTags(data);
+      } else {
+        throw new Error();
       }
     } catch {}
   }, []);
@@ -103,6 +107,8 @@ export default function DashboardPage() {
       if (res.ok) {
         const note = await res.json();
         router.push(`/notes/${note.id}`);
+      } else {
+        throw new Error();
       }
     } catch {
       addToast("Failed to create note", "error");

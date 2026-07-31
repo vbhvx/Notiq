@@ -65,6 +65,8 @@ export default function NoteEditorPage() {
         const updated = await res.json();
         setNote(updated);
         setSaving("saved");
+      } else {
+        throw new Error();
       }
     } catch { setSaving("unsaved"); }
   }, [noteId]);
@@ -128,17 +130,20 @@ export default function NoteEditorPage() {
         const updated = await res.json();
         setNote(updated);
         addToast(updated.isPublic ? "Note is now public" : "Note is now private", "success");
+      } else {
+        throw new Error();
       }
     } catch { addToast("Failed to update visibility", "error"); }
   };
 
   const archiveNote = async () => {
     try {
-      await fetch(`/api/notes/${noteId}`, {
+      const res = await fetch(`/api/notes/${noteId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isArchived: true }),
       });
+      if (!res.ok) throw new Error();
       addToast("Note archived", "success");
       router.push("/dashboard");
     } catch { addToast("Failed to archive", "error"); }

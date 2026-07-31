@@ -28,7 +28,11 @@ export default function InsightsPage() {
   const fetchInsights = useCallback(async () => {
     try {
       const res = await fetch("/api/insights");
-      if (res.ok) setData(await res.json());
+      if (res.ok) {
+        setData(await res.json());
+      } else {
+        throw new Error();
+      }
     } catch {  }
     finally { setLoading(false); }
   }, []);

@@ -25,6 +25,8 @@ export default function ArchivedPage() {
       if (res.ok) {
         const data = await res.json();
         setNotes(data.notes);
+      } else {
+        throw new Error();
       }
     } catch { addToast("Failed to load archived notes", "error"); }
     finally { setLoading(false); }
@@ -36,11 +38,12 @@ export default function ArchivedPage() {
   const unarchive = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await fetch(`/api/notes/${id}`, {
+      const res = await fetch(`/api/notes/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isArchived: false }),
       });
+      if (!res.ok) throw new Error();
       setNotes((prev) => prev.filter((n) => n.id !== id));
       addToast("Note restored", "success");
     } catch { addToast("Failed to restore", "error"); }
